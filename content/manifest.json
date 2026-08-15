@@ -1,0 +1,50 @@
+[
+  {
+    "file": "00-front-matter.md",
+    "title": "Front Matter & Preface"
+  },
+  {
+    "file": "01-chapter-1.md",
+    "title": "Chapter 1 \u2014 The Quantum Revolution"
+  },
+  {
+    "file": "02-chapter-2.md",
+    "title": "Chapter 2 \u2014 The Language of Quantum Information"
+  },
+  {
+    "file": "03-chapter-3.md",
+    "title": "Chapter 3 \u2014 Quantum Gates"
+  },
+  {
+    "file": "04-chapter-4.md",
+    "title": "Chapter 4 \u2014 Quantum Circuits"
+  },
+  {
+    "file": "05-chapter-5.md",
+    "title": "Chapter 5 \u2014 Quantum Algorithms"
+  },
+  {
+    "file": "06-chapter-6.md",
+    "title": "Chapter 6 \u2014 Grover's Search & Variational Algorithms"
+  },
+  {
+    "file": "07-chapter-7.md",
+    "title": "Chapter 7 \u2014 Quantum Hardware and Noise"
+  },
+  {
+    "file": "08-chapter-8.md",
+    "title": "Chapter 8 \u2014 Qiskit Aer Noise Simulation & Benchmarking"
+  },
+  {
+    "file": "09-chapter-9.md",
+    "title": "Chapter 9 \u2014 Accessing IBM Quantum Hardware"
+  },
+  {
+    "file": "10-chapter-10.md",
+    "title": "Chapter 10 \u2014 Other Quantum Platforms"
+  },
+  {
+    "file": "11-index.md",
+    "title": "Index & Back Matter"
+  }
+]
