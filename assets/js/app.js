@@ -309,6 +309,8 @@
      real GitHub Pages URL(s) below once every volume is live. Until then,
      the link is inert (points to "#") rather than guessing a URL. */
   const SERIES_LINKS = [
+      {
+          label: "Laboratory Manual I — Hands-on Qiskit Experiments", url: "https://skjaindr.github.io/Quantum-Computing.labmanual-open-1/" },
       { label: "Volume II — Quantum Algorithms & Complexity", url: "https://skjaindr.github.io/Quantum-Computing.book-open-2/" }, // TODO: set to your deployed Volume II URL
   ];
 
