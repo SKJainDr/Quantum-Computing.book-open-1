@@ -48,17 +48,6 @@
       <stop offset="0%" stop-color="#188A75"/>
       <stop offset="100%" stop-color="#094F42"/>
     </linearGradient>
-
-    <linearGradient id="barrel" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#F6D488"/>
-      <stop offset="45%" stop-color="#E0A93A"/>
-      <stop offset="100%" stop-color="#A9781F"/>
-    </linearGradient>
-    <linearGradient id="grip" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#4B4B50"/>
-      <stop offset="50%" stop-color="#2B2B2F"/>
-      <stop offset="100%" stop-color="#161618"/>
-    </linearGradient>
   </defs>
 
   <!-- background -->
@@ -72,20 +61,19 @@
     <circle cx="0" cy="0" r="17" fill="url(#nucleus)" stroke="#0D1636" stroke-width="1.5"/>
   </g>
 
-  <!-- pen -->
-  <g transform="translate(258,234) rotate(-12)">
-    <!-- barrel -->
-    <rect x="-140" y="-16" width="220" height="32" rx="16" fill="url(#barrel)"/>
-    <!-- barrel highlight -->
-    <path d="M -125 -6 Q -30 -16 55 -8" fill="none" stroke="#FBEFCB" stroke-width="6" stroke-linecap="round" opacity="0.55"/>
-    <!-- metal band -->
-    <rect x="-8" y="-17" width="14" height="34" fill="#8A5A15"/>
-    <!-- grip -->
-    <path d="M 55 -18 L 100 -14 Q 112 0 100 14 L 55 18 Z" fill="url(#grip)"/>
-    <path d="M 62 -9 L 96 -6" stroke="#7A7A80" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
-    <!-- nib -->
-    <path d="M 100 -14 L 150 0 L 100 14 Z" fill="url(#barrel)"/>
-    <path d="M 106 0 L 148 0" stroke="#8A5A15" stroke-width="2.5"/>
+  <!-- glasses -->
+  <g transform="translate(256,222)">
+    <!-- temple arms -->
+    <path d="M -95 -8 L -140 -28 L -158 -8" fill="none" stroke="url(#gold)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 95 -8 L 140 -28 L 158 -8" fill="none" stroke="url(#gold)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- bridge -->
+    <path d="M -18 -2 Q 0 -14 18 -2" fill="none" stroke="url(#gold)" stroke-width="11" stroke-linecap="round"/>
+    <!-- left lens -->
+    <ellipse cx="-58" cy="0" rx="52" ry="38" fill="url(#lens)" stroke="url(#gold)" stroke-width="11"/>
+    <path d="M -84 -14 Q -58 -30 -32 -14" fill="none" stroke="#C9D0E4" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+    <!-- right lens -->
+    <ellipse cx="58" cy="0" rx="52" ry="38" fill="url(#lens)" stroke="url(#gold)" stroke-width="11"/>
+    <path d="M 32 -14 Q 58 -30 84 -14" fill="none" stroke="#C9D0E4" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
   </g>
 
   <!-- book stack -->

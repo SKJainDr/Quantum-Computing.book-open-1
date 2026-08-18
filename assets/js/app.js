@@ -5,6 +5,41 @@
 (function () {
   "use strict";
 
+  /* ---------------- CONTENT-PROTECTION CONFIG ----------------
+     Edit WATERMARK_NAME to change whose name appears on every page.
+     The date stamp is generated live from the visitor's system clock,
+     so it reflects the day the page was actually viewed/screenshotted. */
+  const WATERMARK_NAME = "© Dr. S. K. Jain";
+
+  /* ---------------- CONTENT PROTECTION ---------------- */
+  (function contentProtection() {
+    const watermarkLayer = document.getElementById("watermarkLayer");
+    function paintWatermark() {
+      const stamp = `${WATERMARK_NAME} · ${new Date().toLocaleDateString(undefined, { year: "numeric", month: "short", day: "2-digit" })}`;
+      const tile = Array(48).fill(`<span>${stamp}</span>`).join("");
+      watermarkLayer.innerHTML = tile;
+    }
+    paintWatermark();
+    // refresh at local midnight so a page left open overnight still stamps the correct day
+    setInterval(paintWatermark, 60 * 60 * 1000);
+
+    // Block right-click, text selection copy, cut, drag, and common save/print/devtools shortcuts.
+    // Note: none of this stops someone who opens dev tools or views page source deliberately —
+    // it deters casual copy/paste and printing, it does not encrypt or hide the content.
+    document.addEventListener("contextmenu", (e) => e.preventDefault());
+    document.addEventListener("copy", (e) => e.preventDefault());
+    document.addEventListener("cut", (e) => e.preventDefault());
+    document.addEventListener("dragstart", (e) => e.preventDefault());
+    document.addEventListener("keydown", (e) => {
+      const k = e.key.toLowerCase();
+      const blockedCombo =
+        (e.ctrlKey || e.metaKey) && ["c", "x", "s", "p", "u"].includes(k) ||
+        ((e.ctrlKey || e.metaKey) && e.shiftKey && ["i", "j", "c"].includes(k)) ||
+        e.key === "F12" || e.key === "PrintScreen";
+      if (blockedCombo) e.preventDefault();
+    });
+  })();
+
   const els = {
     root: document.body,
     chapterNav: document.getElementById("chapterNav"),
@@ -310,8 +345,9 @@
      the link is inert (points to "#") rather than guessing a URL. */
   const SERIES_LINKS = [
       {
-          label: "Laboratory Manual I — Hands-on Qiskit Experiments", url: "https://skjaindr.github.io/Quantum-Computing.labmanual-open-1/" },
-      { label: "Volume II — Quantum Algorithms & Complexity", url: "https://skjaindr.github.io/Quantum-Computing.book-open-2/" }, // TODO: set to your deployed Volume II URL
+          label: "Laboratory Manual I — Hands-on Qiskit Experiments", url: "https://skjaindr.github.io/Quantum-Computing.labmanual-1/" },
+      {
+          label: "Volume II — Quantum Algorithms & Complexity", url: "https://skjaindr.github.io/Quantum-Computing.book-2/" }, // TODO: set to your deployed Volume II URL
   ];
 
   function initSeriesLinks() {
@@ -382,8 +418,8 @@
   }
 
   /* ---------------- INIT ---------------- */
-  // Visitor counter, like button, and series links are independent of
-  // chapter loading, so a manifest/content failure never prevents them.
+  // Visitor counter and like button are independent of chapter loading, so a
+  // manifest/content failure never prevents them from initializing.
   initVisitorCounter();
   initLikeButton();
   initSeriesLinks();
