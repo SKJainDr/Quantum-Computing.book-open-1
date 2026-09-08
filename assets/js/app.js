@@ -5,41 +5,6 @@
 (function () {
   "use strict";
 
-  /* ---------------- CONTENT-PROTECTION CONFIG ----------------
-     Edit WATERMARK_NAME to change whose name appears on every page.
-     The date stamp is generated live from the visitor's system clock,
-     so it reflects the day the page was actually viewed/screenshotted. */
-  const WATERMARK_NAME = "© Dr. S. K. Jain";
-
-  /* ---------------- CONTENT PROTECTION ---------------- */
-  (function contentProtection() {
-    const watermarkLayer = document.getElementById("watermarkLayer");
-    function paintWatermark() {
-      const stamp = `${WATERMARK_NAME} · ${new Date().toLocaleDateString(undefined, { year: "numeric", month: "short", day: "2-digit" })}`;
-      const tile = Array(48).fill(`<span>${stamp}</span>`).join("");
-      watermarkLayer.innerHTML = tile;
-    }
-    paintWatermark();
-    // refresh at local midnight so a page left open overnight still stamps the correct day
-    setInterval(paintWatermark, 60 * 60 * 1000);
-
-    // Block right-click, text selection copy, cut, drag, and common save/print/devtools shortcuts.
-    // Note: none of this stops someone who opens dev tools or views page source deliberately —
-    // it deters casual copy/paste and printing, it does not encrypt or hide the content.
-    document.addEventListener("contextmenu", (e) => e.preventDefault());
-    document.addEventListener("copy", (e) => e.preventDefault());
-    document.addEventListener("cut", (e) => e.preventDefault());
-    document.addEventListener("dragstart", (e) => e.preventDefault());
-    document.addEventListener("keydown", (e) => {
-      const k = e.key.toLowerCase();
-      const blockedCombo =
-        (e.ctrlKey || e.metaKey) && ["c", "x", "s", "p", "u"].includes(k) ||
-        ((e.ctrlKey || e.metaKey) && e.shiftKey && ["i", "j", "c"].includes(k)) ||
-        e.key === "F12" || e.key === "PrintScreen";
-      if (blockedCombo) e.preventDefault();
-    });
-  })();
-
   const els = {
     root: document.body,
     chapterNav: document.getElementById("chapterNav"),
@@ -168,6 +133,8 @@
     buildPageToc(tocEntries);
     buildPager(index);
     highlightActiveNav(index);
+    readStartIndex = 0;
+    attachReadStartHandlers();
 
     if (!opts.skipScroll) {
       els.main.scrollTo({ top: 0 });
@@ -243,6 +210,7 @@
   const synth = window.speechSynthesis;
   let utterQueue = [];
   let utterIndex = 0;
+  let readStartIndex = 0; // user-chosen starting chunk for this chapter (click any paragraph to set)
   let speaking = false;
   let paused = false;
   let currentMark = null;
@@ -253,6 +221,30 @@
       "h1, h2, h3, h4, p, li, blockquote, .box .box-title, .box p, figcaption"
     );
     return [...blocks].filter((b) => b.textContent.trim().length > 0);
+  }
+
+  function setReadStart(i) {
+    const chunks = getReadableChunks();
+    chunks.forEach((el) => el.classList.remove("read-start-marker"));
+    if (chunks[i]) {
+      chunks[i].classList.add("read-start-marker");
+      readStartIndex = i;
+    }
+  }
+
+  function attachReadStartHandlers() {
+    // Clicking any paragraph/heading sets it as the read-aloud starting point —
+    // lets the person resume or jump in partway through a chapter instead of
+    // always starting from the top.
+    const chunks = getReadableChunks();
+    chunks.forEach((el, i) => {
+      el.classList.add("read-start-target");
+      el.addEventListener("click", (e) => {
+        if (window.getSelection().toString().length > 0) return; // don't hijack text selection
+        if (e.target.closest("a")) return; // let links navigate normally
+        setReadStart(i);
+      });
+    });
   }
 
   function clearHighlight() {
@@ -306,7 +298,7 @@
     els.playBtn.classList.add("speaking");
     els.iconPlay.style.display = "none";
     els.iconPause.style.display = "block";
-    speakFrom(0);
+    speakFrom(readStartIndex);
   }
 
   function togglePause() {
@@ -344,10 +336,11 @@
      real GitHub Pages URL(s) below once every volume is live. Until then,
      the link is inert (points to "#") rather than guessing a URL. */
   const SERIES_LINKS = [
-      {
-          label: "Laboratory Manual I — Hands-on Qiskit Experiments", url: "https://skjaindr.github.io/Quantum-Computing.labmanual-1/" },
-      {
-          label: "Volume II — Quantum Algorithms & Complexity", url: "https://skjaindr.github.io/Quantum-Computing.book-2/" }, // TODO: set to your deployed Volume II URL
+    { label: "Volume I — Quantum Computers (Textbook)", url: "https://skjaindr.github.io/Quantum-Computing.book-open-1/" },
+    { label: "Volume II — Quantum Algorithms & Complexity (Textbook)", url: "https://skjaindr.github.io/Quantum-Computing.book-open-2/" },
+    { label: "Volume III — Quantum Hardware, Error Correction & Applications", url: "https://skjaindr.github.io/Quantum-Computing.book-open-3" },
+    { label: "Laboratory Manual I — Hands-on Qiskit Experiments", url: "https://skjaindr.github.io/Quantum-Computing.labmanual-open-1/" },
+    { label: "Laboratory Manual II — Advanced Experiments - Security, Hardware Platforms and Applications", url: "https://skjaindr.github.io/Quantum-Computing.labmanual-open-2/" },
   ];
 
   function initSeriesLinks() {
@@ -418,8 +411,8 @@
   }
 
   /* ---------------- INIT ---------------- */
-  // Visitor counter and like button are independent of chapter loading, so a
-  // manifest/content failure never prevents them from initializing.
+  // Visitor counter, like button, and series links are independent of
+  // chapter loading, so a manifest/content failure never prevents them.
   initVisitorCounter();
   initLikeButton();
   initSeriesLinks();
