@@ -133,8 +133,6 @@
     buildPageToc(tocEntries);
     buildPager(index);
     highlightActiveNav(index);
-    readStartIndex = 0;
-    attachReadStartHandlers();
 
     if (!opts.skipScroll) {
       els.main.scrollTo({ top: 0 });
@@ -210,7 +208,6 @@
   const synth = window.speechSynthesis;
   let utterQueue = [];
   let utterIndex = 0;
-  let readStartIndex = 0; // user-chosen starting chunk for this chapter (click any paragraph to set)
   let speaking = false;
   let paused = false;
   let currentMark = null;
@@ -221,30 +218,6 @@
       "h1, h2, h3, h4, p, li, blockquote, .box .box-title, .box p, figcaption"
     );
     return [...blocks].filter((b) => b.textContent.trim().length > 0);
-  }
-
-  function setReadStart(i) {
-    const chunks = getReadableChunks();
-    chunks.forEach((el) => el.classList.remove("read-start-marker"));
-    if (chunks[i]) {
-      chunks[i].classList.add("read-start-marker");
-      readStartIndex = i;
-    }
-  }
-
-  function attachReadStartHandlers() {
-    // Clicking any paragraph/heading sets it as the read-aloud starting point —
-    // lets the person resume or jump in partway through a chapter instead of
-    // always starting from the top.
-    const chunks = getReadableChunks();
-    chunks.forEach((el, i) => {
-      el.classList.add("read-start-target");
-      el.addEventListener("click", (e) => {
-        if (window.getSelection().toString().length > 0) return; // don't hijack text selection
-        if (e.target.closest("a")) return; // let links navigate normally
-        setReadStart(i);
-      });
-    });
   }
 
   function clearHighlight() {
@@ -276,6 +249,7 @@
 
       const utter = new SpeechSynthesisUtterance(block.textContent);
       utter.rate = parseFloat(els.rateSelect.value || "1");
+      utter.volume = 1; // maximum the Web Speech API allows (range 0–1)
       utter.onend = () => {
         if (!speaking || paused) return;
         utterIndex++;
@@ -298,7 +272,7 @@
     els.playBtn.classList.add("speaking");
     els.iconPlay.style.display = "none";
     els.iconPause.style.display = "block";
-    speakFrom(readStartIndex);
+    speakFrom(0);
   }
 
   function togglePause() {
@@ -336,11 +310,7 @@
      real GitHub Pages URL(s) below once every volume is live. Until then,
      the link is inert (points to "#") rather than guessing a URL. */
   const SERIES_LINKS = [
-    { label: "Volume I — Quantum Computers (Textbook)", url: "https://skjaindr.github.io/Quantum-Computing.book-open-1/" },
-    { label: "Volume II — Quantum Algorithms & Complexity (Textbook)", url: "https://skjaindr.github.io/Quantum-Computing.book-open-2/" },
-    { label: "Volume III — Quantum Hardware, Error Correction & Applications", url: "https://skjaindr.github.io/Quantum-Computing.book-open-3" },
-    { label: "Laboratory Manual I — Hands-on Qiskit Experiments", url: "https://skjaindr.github.io/Quantum-Computing.labmanual-open-1/" },
-    { label: "Laboratory Manual II — Advanced Experiments - Security, Hardware Platforms and Applications", url: "https://skjaindr.github.io/Quantum-Computing.labmanual-open-2/" },
+      { label: "Volume II — Quantum Algorithms & Complexity", url: "https://skjaindr.github.io/Quantum-Computing.book-open-2/" }, // TODO: set to your deployed Volume II URL
   ];
 
   function initSeriesLinks() {
@@ -364,7 +334,7 @@
   const likeBtn = document.getElementById("likeBtn");
   const likeCountEl = document.getElementById("likeCount");
   const visitorCountEl = document.getElementById("visitorCount");
-  const LIKE_STORAGE_KEY = "qc-liked";
+  const LIKE_STORAGE_KEY = "qc-liked-" + COUNTER_NAMESPACE; // per book: books share one browser origin
 
   async function initVisitorCounter() {
     if (!visitorCountEl) return;
@@ -379,35 +349,46 @@
 
   async function initLikeButton() {
     if (!likeBtn) return;
-    const alreadyLiked = localStorage.getItem(LIKE_STORAGE_KEY) === "1";
-    if (alreadyLiked) likeBtn.classList.add("liked");
+    if (localStorage.getItem(LIKE_STORAGE_KEY) === "1") likeBtn.classList.add("liked");
 
+    let likeSent = false; // true once this visitor's like has been sent, so a late count-load can't overwrite it
+
+    // Attach the click handler first, so a like is never ignored while the count is still loading.
+    likeBtn.addEventListener("click", async () => {
+      if (localStorage.getItem(LIKE_STORAGE_KEY) === "1") return; // like once per visitor (per book)
+      const prevText = likeCountEl.textContent;
+      const prev = parseInt(prevText.replace(/,/g, ""), 10);
+      likeSent = true;
+      likeBtn.classList.add("liked");
+      localStorage.setItem(LIKE_STORAGE_KEY, "1");
+      if (!isNaN(prev)) likeCountEl.textContent = (prev + 1).toLocaleString(); // optimistic update
+      try {
+        const res = await fetch(`${ABACUS_BASE}/hit/${COUNTER_NAMESPACE}/likes`, { cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        likeCountEl.textContent = data.value.toLocaleString();
+      } catch (err) {
+        // The like was NOT recorded on the server: undo, so the visitor can simply click again.
+        likeSent = false;
+        likeBtn.classList.remove("liked");
+        localStorage.removeItem(LIKE_STORAGE_KEY);
+        likeCountEl.textContent = prevText;
+      }
+    });
+
+    // Read the shared like count from the server on every visit (never from the browser cache).
     try {
-      const res = await fetch(`${ABACUS_BASE}/get/${COUNTER_NAMESPACE}/likes`);
+      const res = await fetch(`${ABACUS_BASE}/get/${COUNTER_NAMESPACE}/likes`, { cache: "no-store" });
+      if (likeSent) return; // the visitor already liked while this was loading; keep the fresher value
       if (res.ok) {
         const data = await res.json();
         likeCountEl.textContent = data.value.toLocaleString();
       } else {
-        likeCountEl.textContent = "0";
+        likeCountEl.textContent = "0"; // counter not created yet: the first like will create it
       }
     } catch (err) {
-      likeCountEl.textContent = "—";
+      if (!likeSent) likeCountEl.textContent = "—";
     }
-
-    likeBtn.addEventListener("click", async () => {
-      if (localStorage.getItem(LIKE_STORAGE_KEY) === "1") return; // like once per visitor
-      likeBtn.classList.add("liked");
-      localStorage.setItem(LIKE_STORAGE_KEY, "1");
-      const prev = parseInt(likeCountEl.textContent.replace(/,/g, ""), 10) || 0;
-      likeCountEl.textContent = (prev + 1).toLocaleString(); // optimistic update
-      try {
-        const res = await fetch(`${ABACUS_BASE}/hit/${COUNTER_NAMESPACE}/likes`);
-        const data = await res.json();
-        likeCountEl.textContent = data.value.toLocaleString();
-      } catch (err) {
-        /* optimistic value already shown; harmless if the request fails */
-      }
-    });
   }
 
   /* ---------------- INIT ---------------- */
