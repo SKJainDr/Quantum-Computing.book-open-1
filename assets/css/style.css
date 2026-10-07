@@ -366,6 +366,18 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 
 .reading-word{ background: color-mix(in srgb, var(--accent) 35%, transparent); border-radius:3px; }
 
+/* ---------------- READ ALOUD: START FROM ANY POINT ----------------
+   When speech synthesis is available, hint that any paragraph/heading/
+   list item/box text can be clicked to start (or jump) narration there. */
+.tts-ready .prose h1:hover, .tts-ready .prose h2:hover, .tts-ready .prose h3:hover,
+.tts-ready .prose h4:hover, .tts-ready .prose p:hover, .tts-ready .prose li:hover,
+.tts-ready .prose blockquote:hover, .tts-ready .prose figcaption:hover,
+.tts-ready .prose .box .box-title:hover, .tts-ready .prose .box p:hover{
+  cursor: pointer;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
 /* ============ CHAPTER PAGER (clearly visible, colored) ============ */
 .chapter-pager{ display:flex; justify-content:space-between; gap:16px; margin-top:60px; padding-top:24px; border-top:1px solid var(--border-soft); }
 .pager-link{

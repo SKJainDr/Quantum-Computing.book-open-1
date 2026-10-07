@@ -29,7 +29,7 @@ A self-contained GitHub Pages site for **Quantum Computers: Principles, Qubits, 
 ## Features
 
 - **Dark / light theme** — toggle in the top bar, remembers your choice
-- **Read aloud** — uses the browser's built-in Web Speech API (no external service, works offline once loaded). Play/pause, stop, and a speed selector (0.8×–1.75×). **Click any paragraph or heading to set it as the starting point** — a gold left-border marks the chosen spot, and it stays put until you pick a different one or navigate to another chapter. The paragraph currently being read is highlighted and auto-scrolled into view, and it automatically advances to the next chapter when one finishes.
+- **Read aloud** — uses the browser's built-in Web Speech API (no external service, works offline once loaded). Play/pause, stop, and a speed selector (0.8×–1.75×). The paragraph currently being read is highlighted and auto-scrolled into view, and it automatically advances to the next chapter when one finishes.
 - **Clickable navigation** — every chapter link, every subsection in the on-page TOC, and Prev/Next chapter buttons are deep-linkable (`#/03-chapter-3.md#3-2-multi-qubit-gates`), so you can share a link straight to a section
 - **Filter box** in the sidebar to quickly jump to a chapter
 - **Visitor counter** (sidebar footer) and **like button** (top bar, red heart) — see "Visitor counter & like button" below for how these work and how to configure them
@@ -37,21 +37,17 @@ A self-contained GitHub Pages site for **Quantum Computers: Principles, Qubits, 
 
 ## Cross-linking the series
 
-The sidebar's "More in this series" section links to all five titles in the series — the other two textbook volumes plus both laboratory manuals. These now point to the real, live GitHub Pages URLs:
+The sidebar has a "More in this series" section linking to the sibling volume — but since each book is a separate GitHub Pages site, this repo has no way to know the sibling's URL automatically. The link points to `#` (inert) until you fill it in.
+
+**After you've deployed both volumes**, open `assets/js/app.js`, find the `SERIES_LINKS` constant near the top of the visitor-counter/like-button section, and replace the placeholder `url: "#"` with the sibling's real GitHub Pages URL, e.g.:
 
 ```js
 const SERIES_LINKS = [
-  { label: "Volume I — Quantum Computers (Textbook)", url: "https://skjaindr.github.io/Quantum-Computing.book-open-1/" },
-  { label: "Volume II — Quantum Algorithms & Complexity (Textbook)", url: "https://skjaindr.github.io/Quantum-Computing.book-open-2/" },
-  { label: "Volume III — Quantum Hardware, Error Correction & Applications", url: "https://skjaindr.github.io/Quantum-Computing.book-open-3" },
-  { label: "Laboratory Manual I — Hands-on Qiskit Experiments", url: "https://skjaindr.github.io/Quantum-Computing.labmanual-open-1/" },
-  { label: "Laboratory Manual II — Advanced Experiments - Security, Hardware Platforms and Applications", url: "https://skjaindr.github.io/Quantum-Computing.labmanual-open-2/" },
+  { label: "Volume II — Quantum Algorithms & Complexity", url: "https://your-username.github.io/quantum-algorithms-book-site/" },
 ];
 ```
 
-This list includes a link back to this same book — that's intentional per how the list was specified, not an oversight. If you'd rather each site omit a link to itself, remove that one entry from `SERIES_LINKS` in this file.
-
-**Keep plain and protected sites cross-linked separately.** This is the plain (unprotected) version — every URL above ends in `-open-N` (or `labmanual-open-N`), i.e. the plain sites. The protected version of this same book has its own `SERIES_LINKS` pointing to the corresponding `-N` (non-"open") protected URLs. Don't mix the two, or a reader on the plain series could end up on a protected page (or vice versa). If any of these repos hasn't been created/deployed yet, that particular link will simply 404 until it exists.
+If you add more volumes to the series later, add more entries to this same array — each renders as its own link.
 
 ## Visitor counter & like button
 
